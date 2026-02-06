@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will you be my Valentine?</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 48px 40px 40px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      max-width: 420px;
+      width: 90%;
+      position: relative;
+      z-index: 2;
+    }
+
+    .bunny-container {
+      position: relative;
+      width: 180px;
+      height: 200px;
+      margin: 0 auto 24px;
+    }
+
+    .bunny-container svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Floating hearts around bunny */
+    .floating-heart {
+      position: absolute;
+      font-size: 20px;
+      animation: floatHeart 3s ease-in-out infinite;
+      opacity: 0.8;
+    }
+    .floating-heart:nth-child(2) { top: 10px; right: 5px; animation-delay: 0.5s; font-size: 16px; }
+    .floating-heart:nth-child(3) { top: 30px; left: 0px; animation-delay: 1s; font-size: 14px; }
+    .floating-heart:nth-child(4) { bottom: 40px; right: 0px; animation-delay: 1.5s; font-size: 18px; }
+
+    @keyframes floatHeart {
+      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+      50% { transform: translateY(-12px) rotate(10deg); opacity: 1; }
+    }
+
+    .question {
+      font-size: 26px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 32px;
+      line-height: 1.3;
+    }
+
+    .question span {
+      color: #e91e63;
+    }
+
+    .buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      min-height: 60px;
+      position: relative;
+    }
+
+    .btn-yes {
+      background: #e91e63;
+      color: white;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(233,30,99,0.3);
+    }
+
+    .btn-yes:hover {
+      background: #c2185b;
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(233,30,99,0.4);
+    }
+
+    .btn-no {
+      background: #e0e0e0;
+      color: #666;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .subtext {
+      color: #999;
+      font-size: 13px;
+      margin-top: 20px;
+      font-style: italic;
+    }
+
+    /* Yes screen */
+    .yes-screen {
+      display: none;
+    }
+
+    .yes-screen.active {
+      display: block;
+    }
+
+    .card.hidden {
+      display: none;
+    }
+
+    .yes-screen h1 {
+      font-size: 42px;
+      color: #e91e63;
+      margin-bottom: 16px;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .yes-screen p {
+      font-size: 20px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .yes-screen .bunny-container {
+      margin-bottom: 20px;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Confetti */
+    .confetti-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      top: -10px;
+      opacity: 0;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Background hearts */
+    .bg-hearts {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .bg-heart {
+      position: absolute;
+      color: rgba(255,255,255,0.15);
+      animation: bgFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes bgFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-30px) rotate(15deg); }
+    }
+
+    /* Bunny wiggle on yes */
+    @keyframes bunnyWiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-8deg); }
+      75% { transform: rotate(8deg); }
+    }
+
+    .wiggle {
+      animation: bunnyWiggle 0.5s ease-in-out 3;
+    }
+
+    /* Growing yes button */
+    .btn-yes.growing {
+      padding: 18px 50px;
+      font-size: 22px;
+    }
+
+    .btn-yes.growing-2 {
+      padding: 22px 60px;
+      font-size: 26px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background floating hearts -->
+  <div class="bg-hearts" id="bgHearts"></div>
+
+  <!-- Main card -->
+  <div class="card" id="card">
+    <div class="bunny-container">
+      <!-- Floating hearts around bunny -->
+      <div class="floating-heart" style="top: 0; right: 15px;">&#x1F497;</div>
+      <div class="floating-heart">&#x1F495;</div>
+      <div class="floating-heart">&#x1F497;</div>
+      <div class="floating-heart">&#x1F495;</div>
+
+      <!-- SVG Bunny - Jellycat style -->
+      <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- Left ear -->
+        <ellipse cx="72" cy="50" rx="22" ry="52" fill="#f0e6dc" stroke="#e8ddd4" stroke-width="1"/>
+        <ellipse cx="72" cy="50" rx="12" ry="40" fill="#f5cec0"/>
+        <!-- Right ear -->
+        <ellipse cx="128" cy="45" rx="22" ry="55" fill="#f0e6dc" stroke="#e8ddd4" stroke-width="1" transform="rotate(8, 128, 45)"/>
+        <ellipse cx="128" cy="45" rx="12" ry="42" fill="#f5cec0" transform="rotate(8, 128, 45)"/>
+
+        <!-- Body -->
+        <ellipse cx="100" cy="165" rx="55" ry="50" fill="#f0e6dc"/>
+
+        <!-- Head -->
+        <circle cx="100" cy="115" r="45" fill="#f5ede6"/>
+        <circle cx="100" cy="115" r="45" fill="#f0e6dc" opacity="0.5"/>
+
+        <!-- Cheeks -->
+        <circle cx="75" cy="122" r="12" fill="#fce4ec" opacity="0.6"/>
+        <circle cx="125" cy="122" r="12" fill="#fce4ec" opacity="0.6"/>
+
+        <!-- Eyes -->
+        <circle cx="87" cy="110" r="4" fill="#4a3728"/>
+        <circle cx="113" cy="110" r="4" fill="#4a3728"/>
+        <!-- Eye shine -->
+        <circle cx="88.5" cy="108.5" r="1.5" fill="white"/>
+        <circle cx="114.5" cy="108.5" r="1.5" fill="white"/>
+
+        <!-- Nose -->
+        <ellipse cx="100" cy="121" rx="5" ry="3.5" fill="#f5a0b0"/>
+
+        <!-- Mouth -->
+        <path d="M96 125 Q100 130 104 125" fill="none" stroke="#d4967f" stroke-width="1.5" stroke-linecap="round"/>
+
+        <!-- Little arms -->
+        <ellipse cx="55" cy="155" rx="18" ry="12" fill="#f0e6dc" transform="rotate(-20, 55, 155)"/>
+        <ellipse cx="145" cy="155" rx="18" ry="12" fill="#f0e6dc" transform="rotate(20, 145, 155)"/>
+
+        <!-- Feet -->
+        <ellipse cx="78" cy="208" rx="20" ry="10" fill="#f0e6dc"/>
+        <ellipse cx="122" cy="208" rx="20" ry="10" fill="#f0e6dc"/>
+      </svg>
+    </div>
+
+    <div class="question">
+      <span>Tara</span>, will you be my Valentine?
+    </div>
+
+    <div class="buttons" id="buttons">
+      <button class="btn-yes" id="btnYes" onclick="sayYes()">Yes</button>
+      <button class="btn-no" id="btnNo" onmouseover="dodgeNo()" onclick="dodgeNo()">No</button>
+    </div>
+
+    <div class="subtext" id="subtext">"No" seems a bit shy &#x1F430;</div>
+  </div>
+
+  <!-- Yes celebration screen -->
+  <div class="card yes-screen" id="yesScreen">
+    <div class="bunny-container wiggle" id="happyBunny">
+      <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- Left ear -->
+        <ellipse cx="72" cy="50" rx="22" ry="52" fill="#f0e6dc" stroke="#e8ddd4" stroke-width="1"/>
+        <ellipse cx="72" cy="50" rx="12" ry="40" fill="#f5cec0"/>
+        <!-- Right ear -->
+        <ellipse cx="128" cy="45" rx="22" ry="55" fill="#f0e6dc" stroke="#e8ddd4" stroke-width="1" transform="rotate(8, 128, 45)"/>
+        <ellipse cx="128" cy="45" rx="12" ry="42" fill="#f5cec0" transform="rotate(8, 128, 45)"/>
+
+        <!-- Body -->
+        <ellipse cx="100" cy="165" rx="55" ry="50" fill="#f0e6dc"/>
+
+        <!-- Head -->
+        <circle cx="100" cy="115" r="45" fill="#f5ede6"/>
+        <circle cx="100" cy="115" r="45" fill="#f0e6dc" opacity="0.5"/>
+
+        <!-- Cheeks - extra rosy -->
+        <circle cx="75" cy="122" r="14" fill="#fce4ec" opacity="0.8"/>
+        <circle cx="125" cy="122" r="14" fill="#fce4ec" opacity="0.8"/>
+
+        <!-- Happy eyes - closed/smiling -->
+        <path d="M80 110 Q87 104 94 110" fill="none" stroke="#4a3728" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M106 110 Q113 104 120 110" fill="none" stroke="#4a3728" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- Nose -->
+        <ellipse cx="100" cy="121" rx="5" ry="3.5" fill="#f5a0b0"/>
+
+        <!-- Big smile -->
+        <path d="M90 126 Q100 136 110 126" fill="none" stroke="#d4967f" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Arms up celebrating -->
+        <ellipse cx="48" cy="140" rx="18" ry="12" fill="#f0e6dc" transform="rotate(-45, 48, 140)"/>
+        <ellipse cx="152" cy="140" rx="18" ry="12" fill="#f0e6dc" transform="rotate(45, 152, 140)"/>
+
+        <!-- Holding a heart -->
+        <text x="100" y="88" text-anchor="middle" font-size="28">&#x1F497;</text>
+
+        <!-- Feet -->
+        <ellipse cx="78" cy="208" rx="20" ry="10" fill="#f0e6dc"/>
+        <ellipse cx="122" cy="208" rx="20" ry="10" fill="#f0e6dc"/>
+      </svg>
+    </div>
+
+    <h1>Yay! &#x1F496;</h1>
+    <p>I knew you'd say yes!<br>Happy Valentine's Day, <strong>Tara</strong> &#x1F430;&#x2764;&#xFE0F;</p>
+  </div>
+
+  <!-- Confetti container -->
+  <div class="confetti-container" id="confetti"></div>
+
+  <script>
+    // No button dodge counter
+    let dodgeCount = 0;
+    const noMessages = [
+      '"No" seems a bit shy &#x1F430;',
+      'Are you sure? &#x1F97A;',
+      'The bunny is getting sad... &#x1F494;',
+      'Please? Pretty please? &#x1F430;&#x1F497;',
+      'You\'re breaking my little bunny heart!',
+      'I\'ll give you extra carrots! &#x1F955;',
+      'The bunny believes in you! &#x1F430;',
+    ];
+
+    const btnYes = document.getElementById('btnYes');
+    const btnNo = document.getElementById('btnNo');
+    const subtext = document.getElementById('subtext');
+    const buttons = document.getElementById('buttons');
+
+    function dodgeNo() {
+      dodgeCount++;
+
+      // Update subtext
+      if (dodgeCount <= noMessages.length) {
+        subtext.innerHTML = noMessages[Math.min(dodgeCount, noMessages.length) - 1];
+      }
+
+      // Grow the yes button
+      if (dodgeCount === 2) btnYes.classList.add('growing');
+      if (dodgeCount >= 4) btnYes.classList.add('growing-2');
+
+      // Move the no button to random position within card
+      const card = document.getElementById('card');
+      const cardRect = card.getBoundingClientRect();
+      const btnRect = btnNo.getBoundingClientRect();
+
+      const maxX = cardRect.width - btnRect.width - 20;
+      const maxY = 60;
+      const randomX = Math.random() * maxX;
+      const randomY = Math.random() * maxY - 30;
+
+      btnNo.style.position = 'absolute';
+      btnNo.style.left = randomX + 'px';
+      btnNo.style.top = randomY + 'px';
+      btnNo.style.transition = 'all 0.2s ease';
+
+      // Shrink no button over time
+      const scale = Math.max(0.5, 1 - dodgeCount * 0.08);
+      btnNo.style.transform = `scale(${scale})`;
+
+      // After many attempts, hide the no button
+      if (dodgeCount >= 8) {
+        btnNo.style.opacity = '0';
+        btnNo.style.pointerEvents = 'none';
+        subtext.innerHTML = 'That\'s what I thought &#x1F60F;&#x1F430;';
+      }
+    }
+
+    function sayYes() {
+      // Hide card, show yes screen
+      document.getElementById('card').classList.add('hidden');
+      const yesScreen = document.getElementById('yesScreen');
+      yesScreen.classList.add('active');
+
+      // Trigger confetti
+      launchConfetti();
+
+      // Wiggle bunny again after a moment
+      setTimeout(() => {
+        const bunny = document.getElementById('happyBunny');
+        bunny.classList.remove('wiggle');
+        void bunny.offsetWidth; // reflow
+        bunny.classList.add('wiggle');
+      }, 2000);
+    }
+
+    function launchConfetti() {
+      const container = document.getElementById('confetti');
+      const colors = ['#e91e63', '#ff5252', '#ff80ab', '#f48fb1', '#f06292', '#ec407a', '#ff4081', '#ff1744', '#fce4ec', '#ffcdd2', '#f8bbd0'];
+
+      for (let i = 0; i < 80; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = (Math.random() * 8 + 5) + 'px';
+        confetti.style.height = (Math.random() * 8 + 5) + 'px';
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        confetti.style.animation = `confettiFall ${Math.random() * 2 + 2}s linear ${Math.random() * 1}s forwards`;
+        container.appendChild(confetti);
+      }
+
+      // Second wave
+      setTimeout(() => {
+        for (let i = 0; i < 40; i++) {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * 100 + '%';
+          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.width = (Math.random() * 8 + 5) + 'px';
+          confetti.style.height = (Math.random() * 8 + 5) + 'px';
+          confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+          confetti.style.animation = `confettiFall ${Math.random() * 2 + 2}s linear forwards`;
+          container.appendChild(confetti);
+        }
+      }, 1000);
+    }
+
+    // Create background floating hearts
+    function createBgHearts() {
+      const container = document.getElementById('bgHearts');
+      const hearts = ['\u2764\uFE0F', '\uD83D\uDC95', '\uD83D\uDC97', '\uD83D\uDC96', '\uD83E\uDE77'];
+      for (let i = 0; i < 12; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'bg-heart';
+        heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        heart.style.left = Math.random() * 100 + '%';
+        heart.style.top = Math.random() * 100 + '%';
+        heart.style.fontSize = (Math.random() * 20 + 14) + 'px';
+        heart.style.animationDelay = Math.random() * 4 + 's';
+        heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+        container.appendChild(heart);
+      }
+    }
+
+    createBgHearts();
+  </script>
+</body>
+</html>
